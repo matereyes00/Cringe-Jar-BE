@@ -41,7 +41,10 @@ export class RoomsService {
     scores[dto.targetName] = (scores[dto.targetName] || 0) + 1;
     room.scores = scores;
 
-    // Save event history log
+    // 1. Save room score changes first
+    await this.roomRepository.save(room);
+
+    // 2. Create and save log entry
     const log = this.logRepository.create({
       targetName: dto.targetName,
       description: dto.description,
@@ -49,8 +52,8 @@ export class RoomsService {
     });
 
     await this.logRepository.save(log);
-    await this.roomRepository.save(room);
 
+    // 3. Re-fetch room with fresh history
     return this.getRoom(roomId, passcode);
   }
 
