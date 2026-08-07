@@ -1,98 +1,174 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Cringe Jar Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A lightweight, high-performance NestJS RESTful API designed to track "cringe" moments, tallies, and history logs among group members in real time. Built with TypeScript, TypeORM, and PostgreSQL, fully containerized using Docker Compose for rapid local development.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## 🛠️ Tech Stack & Architecture
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Framework:** NestJS (Node.js & TypeScript)
+- **Database:** PostgreSQL
+- **ORM:** TypeORM
+- **Validation:** `class-validator`, `class-transformer`
+- **Containerization:** Docker & Docker Compose
+- **Architecture Pattern:** Encapsulated Repository Pattern (Clean Architecture separating Domain, Services, Repositories, and Controllers)
 
-## Project setup
+---
 
-```bash
-$ npm install
+## 🚀 Features
+
+- **Room Management:** Create room instances secured by custom passcodes and unique 6-character short IDs.
+- **Member Roster:** Dynamically register members into active room scorecards.
+- **Tally Tracking:** Log infractions/tallies against specific room members with customized descriptions.
+- **Audit History Log:** Persist detailed event logs with relation tracking per room.
+- **Hot-Reload Development:** Containerized environment pre-configured with volume mounts and NestJS watch mode for instant compile updates.
+
+---
+
+## 📂 Project Structure
+
+```
+src/
+├── application/
+│   ├── dtos/
+│   │   ├── add.member.to.room.dto.ts
+│   │   ├── add.tally.dto.ts
+│   │   └── create.room.dto.ts
+│   └── services/
+│       └── rooms.service.ts
+├── domain/
+│   └── entities/
+│       ├── room.entity.ts
+│       └── tally.log.entity.ts
+└── infrastructure/
+    ├── controllers/
+    │   └── rooms.controller.ts
+    └── database/
+        └── repositories/
+            ├── room.repository.ts
+            └── tally.repository.ts
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## ⚡ Getting Started
 
-# watch mode
-$ npm run start:dev
+### Prerequisites
 
-# production mode
-$ npm run start:prod
-```
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running on your machine.
 
-## Run tests
+### Quick Start with Docker Compose
 
-```bash
-# unit tests
-$ npm run test
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd cringe-jar-backend
+   ```
 
-# e2e tests
-$ npm run test:e2e
+2. **Spin up containers:**
+   ```bash
+   docker compose up --build
+   ```
+   *The NestJS application will be accessible at `http://localhost:3000` and automatically recompile when changes are saved locally.*
 
-# test coverage
-$ npm run test:cov
-```
+3. **Reset DB Volumes (Optional):**
+   If you change entity schemas or column constraints during development, reset the local Postgres volume with:
+   ```bash
+   docker compose down -v
+   docker compose up --build
+   ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 📡 API Endpoints & Usage
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+All endpoints require room passcode verification via the `x-passcode` request header where applicable.
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+### 1. Create Room
+* **`POST /rooms`**
+* **Headers:** `Content-Type: application/json`
+* **Body:**
+  ```json
+  {
+    "name": "Living Room Jar",
+    "passcode": "1234"
+  }
+  ```
+* **Response (201 Created):**
+  ```json
+  {
+    "id": "OOPZRN",
+    "name": "Living Room Jar",
+    "passcode": "1234",
+    "scores": {},
+    "createdAt": "2026-08-07T08:55:18.036Z"
+  }
+  ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+### 2. Fetch Room Details
+* **`GET /rooms/:id`**
+* **Headers:**
+  * `x-passcode`: `1234`
+* **Response (200 OK):**
+  ```json
+  {
+    "id": "OOPZRN",
+    "name": "Living Room Jar",
+    "passcode": "1234",
+    "scores": {
+      "Alice": 1
+    },
+    "history": [
+      {
+        "id": "f678f1ec-eee4-4118-bf6b-7f0308476cc7",
+        "targetName": "Alice",
+        "description": "Said 'synergy' unironically in a meeting",
+        "timestamp": "2026-08-07T09:05:26.093Z"
+      }
+    ],
+    "createdAt": "2026-08-07T08:55:18.036Z"
+  }
+  ```
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### 3. Add Member to Room
+* **`POST /rooms/:id/members`**
+* **Headers:**
+  * `Content-Type: application/json`
+  * `x-passcode`: `1234`
+* **Body:**
+  ```json
+  {
+    "member": "Alice"
+  }
+  ```
+* **Response (201 Created):**
+  ```json
+  {
+    "id": "OOPZRN",
+    "name": "Living Room Jar",
+    "passcode": "1234",
+    "scores": {
+      "Alice": 0
+    }
+  }
+  ```
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### 4. Log a Tally
+* **`POST /rooms/:id/tally`**
+* **Headers:**
+  * `Content-Type: application/json`
+  * `x-passcode`: `1234`
+* **Body:**
+  ```json
+  {
+    "targetName": "Alice",
+    "description": "Said 'synergy' unironically in a meeting"
+  }
+  ```
+* **Response (201 Created):** Returns the updated room object complete with recalculated score and prepended history log.
