@@ -1,0 +1,33 @@
+services:
+  # 1. Check this service name key (e.g., cringe_postgres, db, or postgres)
+  cringe_postgres:
+    image: postgres:16-alpine
+    container_name: cringe_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: cringe_db
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cringe_backend
+    ports:
+      - "3000:3000"
+    environment:
+      # Must match the database service name key above
+      - DB_HOST=cringe_postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgrespassword
+      - DB_NAME=cringe_db
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run start:dev
+    depends_on:
+      # Must match the database service name key above
+      - cringe_postgres
